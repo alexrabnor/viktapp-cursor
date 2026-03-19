@@ -1,0 +1,19 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Installera beroenden (endast paketfiler) först för bättre cache.
+COPY apps/web/package.json apps/web/package-lock.json ./
+
+RUN npm ci
+
+# Kopiera resten av koden.
+COPY apps/web ./apps/web
+
+WORKDIR /app/apps/web
+
+EXPOSE 3000
+
+# Kör devserver så att du kan jobba iterativt.
+CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0", "-p", "3000"]
+

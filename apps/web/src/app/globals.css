@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, sans-serif;
+}
+
+@keyframes vikttappFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.vikttappFadeInUp {
+  animation: vikttappFadeInUp 420ms ease-out both;
+}
+
+@keyframes vikttappChartDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.vikttappChartDraw {
+  animation: vikttappChartDraw 900ms ease-out both;
+}
+
+.vikttappDotPulse {
+  animation: vikttappDotPulse 1.6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes vikttappDotPulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scale(0.95);
+  }
+}
+
+.vikttappBtn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+  transform: translateZ(0);
+}
+
+.vikttappBtn::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: radial-gradient(
+    circle at 20% 0%,
+    rgba(59, 130, 246, 0.28),
+    transparent 55%
+  );
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+
+.vikttappBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.vikttappBtn:hover::before {
+  opacity: 1;
+}
+
+.vikttappBtn:active {
+  transform: translateY(0px) scale(0.99);
+}
+
+.vikttappBtnPrimary {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.95), rgba(99, 102, 241, 0.85));
+  color: white;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.vikttappBtnSoft {
+  background: rgba(255, 255, 255, 0.78);
+  color: #111827;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.vikttappBtnSoft[data-active="true"] {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.vikttappBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18);
+}
+
+@keyframes vikttappCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.vikttappCardEnter {
+  animation: vikttappCardEnter 420ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vikttappCardEnter,
+  .vikttappFadeInUp,
+  .vikttappChartDraw,
+  .vikttappBtn {
+    animation: none !important;
+    transition: none !important;
+  }
+}
