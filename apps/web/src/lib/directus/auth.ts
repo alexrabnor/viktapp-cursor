@@ -1,34 +1,21 @@
-import { directus } from "./client";
-import { isDirectusError } from "@directus/sdk";
+// Auth behövs inte – appen använder public-policy i Directus.
+// Dessa stubs finns kvar för att inte bryta eventuella importer.
 
-export async function directusLogin({
-  email,
-  password,
-}: {
+export async function directusLogin(_payload: {
   email: string;
   password: string;
 }) {
-  try {
-    // mode: "json" keeps tokens in localStorage via authentication('json')
-    await directus.login({ email, password }, { mode: "json" });
-    return true;
-  } catch (error) {
-    if (isDirectusError(error)) {
-      throw new Error(error.message);
-    }
-    throw error;
-  }
+  return false;
 }
 
 export async function directusLogout() {
-  await directus.logout();
+  // no-op
 }
 
 export async function directusRefresh() {
-  await directus.refresh();
+  // no-op
 }
 
-export async function directusGetToken() {
-  return directus.getToken();
+export async function directusGetToken(): Promise<string | null> {
+  return null;
 }
-

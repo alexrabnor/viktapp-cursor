@@ -166,44 +166,35 @@ export default function StatisticsPage() {
           </div>
         </Card>
 
-        {bmi != null && bmiCat != null ? (
-          <Card className="p-4">
-            <BmiGauge bmi={bmi} category={bmiCat} />
-          </Card>
-        ) : (
-          <Card className="p-4">
-            <div className="text-sm font-medium text-zinc-600">BMI-gauge</div>
-            <div className="mt-2 text-zinc-900/70">Logga en vikt först.</div>
-          </Card>
-        )}
+        {/* Till mål + Till normalvikt – ett kort, två kolumner */}
+        <Card className="p-4">
+          <div className="grid grid-cols-2 gap-4 divide-x divide-black/5">
+            <div>
+              <div className="text-sm font-medium text-zinc-600">Till mål</div>
+              <div className="mt-2 text-2xl font-bold text-zinc-900">
+                {diffToGoal == null ? "—" : `${diffToGoal >= 0 ? "" : ""}${formatKg(Math.abs(diffToGoal))}`}
+              </div>
+              <div className="mt-1 text-xs text-zinc-500">
+                {diffToGoal == null
+                  ? "—"
+                  : diffToGoal > 0
+                    ? "Kvar att gå ner"
+                    : "Över målvikt"}
+              </div>
+            </div>
+            <div className="pl-4">
+              <div className="text-sm font-medium text-zinc-600">Till normalvikt</div>
+              <div className="mt-2 text-2xl font-bold text-zinc-900">
+                {diffToNormal == null ? "—" : formatKg(diffToNormal)}
+              </div>
+              <div className="mt-1 text-xs text-zinc-500">
+                Normalt: {Math.round(normalRangeKg.minKg * 10) / 10}–{Math.round(normalRangeKg.maxKg * 10) / 10} kg
+              </div>
+            </div>
+          </div>
+        </Card>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Card className="p-4">
-            <div className="text-sm font-medium text-zinc-600">Till mål</div>
-            <div className="mt-2 text-2xl font-semibold text-zinc-900">
-              {diffToGoal == null ? "—" : `${diffToGoal >= 0 ? "" : "-"}${formatKg(Math.abs(diffToGoal))}`}
-            </div>
-            <div className="mt-1 text-xs text-zinc-500">
-              {diffToGoal == null
-                ? "—"
-                : diffToGoal > 0
-                  ? "Kvar att gå ner"
-                  : "Över målvikt"}
-            </div>
-          </Card>
-
-          <Card className="p-4">
-            <div className="text-sm font-medium text-zinc-600">Till normalvikt</div>
-            <div className="mt-2 text-2xl font-semibold text-zinc-900">
-              {diffToNormal == null ? "—" : formatKg(diffToNormal)}
-            </div>
-            <div className="mt-1 text-xs text-zinc-500">
-              Normal: {Math.round(normalRangeKg.minKg * 10) / 10}–{Math.round(normalRangeKg.maxKg * 10) / 10} kg
-            </div>
-          </Card>
-        </div>
-
-        <Card className="p-4 sm:col-span-2">
+        <Card className="p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="text-sm font-medium text-zinc-600">Progress</div>
@@ -231,6 +222,18 @@ export default function StatisticsPage() {
             />
           </div>
         </Card>
+
+        {/* ── BMI-gauge – egen rad längst ner ── */}
+        {bmi != null && bmiCat != null ? (
+          <Card className="p-4">
+            <BmiGauge bmi={bmi} category={bmiCat} />
+          </Card>
+        ) : (
+          <Card className="p-4">
+            <div className="text-sm font-medium text-zinc-600">BMI-mätare</div>
+            <div className="mt-2 text-zinc-900/70">Logga en vikt och ange din längd i inställningar för att se BMI.</div>
+          </Card>
+        )}
       </div>
     </div>
   );

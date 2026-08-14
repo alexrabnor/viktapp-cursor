@@ -15,7 +15,7 @@ export default function Card({
         "hover:-translate-y-0.5 hover:shadow-md",
         "active:translate-y-0",
         // subtle gradient overlay that intensifies on hover
-        "after:absolute after:inset-0 after:opacity-0 after:transition-opacity after:duration-300",
+        "after:absolute after:inset-0 after:pointer-events-none after:opacity-0 after:transition-opacity after:duration-300",
         "after:bg-[radial-gradient(circle_at_20%_0%,rgba(99,102,241,0.18),transparent_55%)]",
         "hover:after:opacity-100",
         // dark mode overlay

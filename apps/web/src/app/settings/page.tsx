@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Card from "@/components/Card";
 import { useAppData } from "@/app/providers/AppDataProvider";
 
@@ -28,8 +28,8 @@ function Field({
 export default function SettingsPage() {
   const {
     state,
+    isHydrated,
     updateSettings,
-    resetDemo,
     addWeeklyNote,
     addBodyMeasurement,
     addProgressPhoto,
@@ -42,10 +42,21 @@ export default function SettingsPage() {
   );
   const [doseAmountMg, setDoseAmountMg] = useState(state.settings.doseAmountMg);
 
+  // Synka formulär när Directus-data laddats
+  useEffect(() => {
+    if (isHydrated) {
+      setHeightCm(state.settings.heightCm);
+      setGoalWeightKg(state.settings.goalWeightKg);
+      setInjectionIntervalDays(state.settings.injectionIntervalDays);
+      setDoseAmountMg(state.settings.doseAmountMg);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated]);
+
   const weekStartISO = (date: Date) => {
     const d = new Date(date);
-    const day = d.getDay(); // 0=sun
-    const diffToMonday = (day + 6) % 7; // 0 when Monday
+    const day = d.getDay();
+    const diffToMonday = (day + 6) % 7;
     d.setDate(d.getDate() - diffToMonday);
     d.setHours(0, 0, 0, 0);
     return d.toISOString();
@@ -70,6 +81,19 @@ export default function SettingsPage() {
   const [photoLabel, setPhotoLabel] = useState("front");
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [photoTakenAt, setPhotoTakenAt] = useState(() => new Date().toISOString().slice(0, 10));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  if (!isHydrated) {
+    return (
+      <div className="pb-6 pt-4">
+        <h1 className="text-2xl font-bold text-zinc-900">Inställningar</h1>
+        <div className="mt-6 flex items-center gap-3 text-sm text-zinc-500">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700" />
+          Laddar inställningar…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-6">
@@ -79,11 +103,9 @@ export default function SettingsPage() {
       </div>
 
       <div className="mt-4 space-y-3">
+        {/* ── Mål & mått ── */}
         <Card className="p-4">
-          <div className="text-sm font-semibold text-zinc-900">
-            Mål och mått
-          </div>
-
+          <div className="text-sm font-semibold text-zinc-900">Mål och mått</div>
           <div className="mt-3 space-y-3">
             <Field label="Längd" hint="cm">
               <input
@@ -94,7 +116,6 @@ export default function SettingsPage() {
                 onChange={(e) => setHeightCm(Number(e.target.value))}
               />
             </Field>
-
             <Field label="Målvikt" hint="kg">
               <input
                 className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
@@ -105,35 +126,22 @@ export default function SettingsPage() {
               />
             </Field>
           </div>
-
-          <div className="mt-4 flex gap-3">
-            <button
-              type="button"
-              className="vikttappBtn vikttappBtnPrimary flex-1 px-4 py-3 text-sm font-semibold text-white"
-              onClick={() => {
-                if (!Number.isFinite(heightCm) || heightCm <= 0) return;
-                if (!Number.isFinite(goalWeightKg) || goalWeightKg <= 0) return;
-                updateSettings({ heightCm, goalWeightKg });
-              }}
-            >
-              Spara
-            </button>
-            <button
-              type="button"
-              className="vikttappBtn vikttappBtnSoft flex-1 px-4 py-3 text-sm font-semibold"
-              onClick={() => resetDemo()}
-              title="Återställ lokal demo-data"
-            >
-              Reset demo
-            </button>
-          </div>
+          <button
+            type="button"
+            className="vikttappBtn vikttappBtnPrimary mt-4 w-full px-4 py-3 text-sm font-semibold text-white"
+            onClick={() => {
+              if (!Number.isFinite(heightCm) || heightCm <= 0) return;
+              if (!Number.isFinite(goalWeightKg) || goalWeightKg <= 0) return;
+              updateSettings({ heightCm, goalWeightKg });
+            }}
+          >
+            Spara
+          </button>
         </Card>
 
+        {/* ── Injektioner ── */}
         <Card className="p-4">
-          <div className="text-sm font-semibold text-zinc-900">
-            Injektioner
-          </div>
-
+          <div className="text-sm font-semibold text-zinc-900">Injektioner</div>
           <div className="mt-3 space-y-3">
             <Field label="Intervall" hint="dagar">
               <input
@@ -144,7 +152,6 @@ export default function SettingsPage() {
                 onChange={(e) => setInjectionIntervalDays(Number(e.target.value))}
               />
             </Field>
-
             <Field label="Dos" hint="mg">
               <input
                 className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
@@ -155,7 +162,6 @@ export default function SettingsPage() {
               />
             </Field>
           </div>
-
           <button
             type="button"
             className="vikttappBtn vikttappBtnPrimary mt-4 w-full px-4 py-3 text-sm font-semibold text-white"
@@ -169,6 +175,7 @@ export default function SettingsPage() {
           </button>
         </Card>
 
+        {/* ── Veckonoter ── */}
         <Card className="p-4">
           <div className="text-sm font-semibold text-zinc-900">Veckonoter</div>
           <div className="mt-2 text-xs text-zinc-500">
@@ -177,25 +184,23 @@ export default function SettingsPage() {
               new Date(currentWeekStartIso),
             )}
           </div>
-
           <div className="mt-3 space-y-3">
-            <Field label="Morsomt/läge (valfritt)" hint="mood">
+            <Field label="Stämningsläge (valfritt)" hint="mood">
               <input
                 className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
                 value={mood}
                 onChange={(e) => setMood(e.target.value)}
+                placeholder="t.ex. stabil, bra, trött…"
               />
             </Field>
-
             <Field label="Notis">
               <textarea
                 className="mt-1 min-h-28 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
-                placeholder="Skriv några rader om hur veckan gick..."
+                placeholder="Skriv några rader om hur veckan gick…"
               />
             </Field>
-
             <button
               type="button"
               className="vikttappBtn vikttappBtnPrimary w-full px-4 py-3 text-sm font-semibold text-white"
@@ -214,18 +219,15 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          <div className="mt-4">
-            <div className="text-sm font-semibold text-zinc-900">Senaste noterna</div>
-            <div className="mt-2 space-y-2">
-              {state.weeklyNotes.length ? (
-                [...state.weeklyNotes]
+          {state.weeklyNotes.length > 0 && (
+            <div className="mt-4">
+              <div className="text-sm font-semibold text-zinc-900">Senaste noterna</div>
+              <div className="mt-2 space-y-2">
+                {[...state.weeklyNotes]
                   .sort((a, b) => new Date(b.weekStartDate).getTime() - new Date(a.weekStartDate).getTime())
                   .slice(0, 3)
                   .map((n) => (
-                    <div
-                      key={n.id}
-                      className="rounded-2xl bg-zinc-50 p-3 ring-1 ring-black/5"
-                    >
+                    <div key={n.id} className="rounded-2xl bg-zinc-50 p-3 ring-1 ring-black/5">
                       <div className="text-xs font-semibold text-zinc-500">
                         {new Intl.DateTimeFormat("sv-SE", { dateStyle: "medium" }).format(
                           new Date(n.weekStartDate),
@@ -234,14 +236,13 @@ export default function SettingsPage() {
                       </div>
                       <div className="mt-1 text-sm font-medium text-zinc-800">{n.note}</div>
                     </div>
-                  ))
-              ) : (
-                <div className="text-sm text-zinc-600">Inga veckonoter än.</div>
-              )}
+                  ))}
+              </div>
             </div>
-          </div>
+          )}
         </Card>
 
+        {/* ── Kroppsmått ── */}
         <Card className="p-4">
           <div className="text-sm font-semibold text-zinc-900">Kroppsmått</div>
           <div className="mt-3 space-y-3">
@@ -253,43 +254,29 @@ export default function SettingsPage() {
                 onChange={(e) => setMeasuredAt(e.target.value)}
               />
             </Field>
-
             <div className="grid grid-cols-3 gap-2">
               <Field label="Midja (cm)">
                 <input
                   className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
-                  type="number"
-                  step="0.1"
-                  value={waistCm}
-                  onChange={(e) =>
-                    setWaistCm(e.target.value === "" ? "" : Number(e.target.value))
-                  }
+                  type="number" step="0.1" value={waistCm}
+                  onChange={(e) => setWaistCm(e.target.value === "" ? "" : Number(e.target.value))}
                 />
               </Field>
               <Field label="Bröst (cm)">
                 <input
                   className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
-                  type="number"
-                  step="0.1"
-                  value={chestCm}
-                  onChange={(e) =>
-                    setChestCm(e.target.value === "" ? "" : Number(e.target.value))
-                  }
+                  type="number" step="0.1" value={chestCm}
+                  onChange={(e) => setChestCm(e.target.value === "" ? "" : Number(e.target.value))}
                 />
               </Field>
               <Field label="Höfter (cm)">
                 <input
                   className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
-                  type="number"
-                  step="0.1"
-                  value={hipsCm}
-                  onChange={(e) =>
-                    setHipsCm(e.target.value === "" ? "" : Number(e.target.value))
-                  }
+                  type="number" step="0.1" value={hipsCm}
+                  onChange={(e) => setHipsCm(e.target.value === "" ? "" : Number(e.target.value))}
                 />
               </Field>
             </div>
-
             <button
               type="button"
               className="vikttappBtn vikttappBtnPrimary w-full px-4 py-3 text-sm font-semibold text-white"
@@ -302,48 +289,42 @@ export default function SettingsPage() {
                   chestCm: chestCm === "" ? undefined : chestCm,
                   hipsCm: hipsCm === "" ? undefined : hipsCm,
                 });
-                setWaistCm("");
-                setChestCm("");
-                setHipsCm("");
+                setWaistCm(""); setChestCm(""); setHipsCm("");
               }}
             >
               Spara mått
             </button>
           </div>
 
-          <div className="mt-4">
-            <div className="text-sm font-semibold text-zinc-900">Senaste måtten</div>
-            <div className="mt-2 space-y-2">
-              {state.bodyMeasurements.length ? (
-                [...state.bodyMeasurements]
+          {state.bodyMeasurements.length > 0 && (
+            <div className="mt-4">
+              <div className="text-sm font-semibold text-zinc-900">Senaste måtten</div>
+              <div className="mt-2 space-y-2">
+                {[...state.bodyMeasurements]
                   .sort((a, b) => new Date(b.measuredAt).getTime() - new Date(a.measuredAt).getTime())
                   .slice(0, 3)
                   .map((m) => (
-                    <div
-                      key={m.id}
-                      className="rounded-2xl bg-zinc-50 p-3 ring-1 ring-black/5"
-                    >
+                    <div key={m.id} className="rounded-2xl bg-zinc-50 p-3 ring-1 ring-black/5">
                       <div className="text-xs font-semibold text-zinc-500">
                         {new Intl.DateTimeFormat("sv-SE", { dateStyle: "medium" }).format(
                           new Date(m.measuredAt),
                         )}
                       </div>
                       <div className="mt-1 text-sm font-medium text-zinc-800">
-                        {m.waistCm != null ? `Midja ${m.waistCm} cm` : ""}
-                        {m.waistCm != null && m.chestCm != null ? " · " : ""}
-                        {m.chestCm != null ? `Bröst ${m.chestCm} cm` : ""}
-                        {m.chestCm != null && m.hipsCm != null ? " · " : ""}
-                        {m.hipsCm != null ? `Höfter ${m.hipsCm} cm` : ""}
+                        {[
+                          m.waistCm != null ? `Midja ${m.waistCm} cm` : null,
+                          m.chestCm != null ? `Bröst ${m.chestCm} cm` : null,
+                          m.hipsCm != null ? `Höfter ${m.hipsCm} cm` : null,
+                        ].filter(Boolean).join(" · ")}
                       </div>
                     </div>
-                  ))
-              ) : (
-                <div className="text-sm text-zinc-600">Inga mått än.</div>
-              )}
+                  ))}
+              </div>
             </div>
-          </div>
+          )}
         </Card>
 
+        {/* ── Progressfoton ── */}
         <Card className="p-4">
           <div className="text-sm font-semibold text-zinc-900">Progressfoton</div>
           <div className="mt-3 space-y-3">
@@ -354,7 +335,6 @@ export default function SettingsPage() {
                 onChange={(e) => setPhotoLabel(e.target.value)}
               />
             </Field>
-
             <Field label="Datum">
               <input
                 className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
@@ -363,12 +343,14 @@ export default function SettingsPage() {
                 onChange={(e) => setPhotoTakenAt(e.target.value)}
               />
             </Field>
-
-            <Field label="Välj bild">
+            <div>
+              <div className="text-sm font-semibold text-zinc-800">Välj bild</div>
+              {/* Dold native file-input – triggas via knappen nedan */}
               <input
-                className="mt-1 w-full"
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
@@ -380,83 +362,61 @@ export default function SettingsPage() {
                   reader.readAsDataURL(file);
                 }}
               />
-            </Field>
-
+              <button
+                type="button"
+                className="vikttappBtn vikttappBtnSoft mt-1 w-full px-4 py-3 text-sm font-semibold text-zinc-900"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {photoDataUrl ? "Byt bild" : "Välj bild från galleri"}
+              </button>
+            </div>
             {photoDataUrl ? (
               <div className="rounded-3xl bg-zinc-50 p-3 ring-1 ring-black/5">
-                <img
-                  src={photoDataUrl}
-                  alt="Förhandsvisning"
-                  className="h-48 w-full rounded-2xl object-cover"
-                />
+                <img src={photoDataUrl} alt="Förhandsvisning"
+                  className="h-48 w-full rounded-2xl object-cover" />
               </div>
             ) : null}
-
             <button
               type="button"
               className="vikttappBtn vikttappBtnPrimary w-full px-4 py-3 text-sm font-semibold text-white"
               onClick={() => {
                 if (!photoDataUrl) return;
                 const taken = new Date(`${photoTakenAt}T12:00:00`);
-                addProgressPhoto({
-                  takenAt: taken,
-                  label: photoLabel.trim() || undefined,
-                  imageDataUrl: photoDataUrl,
-                });
+                addProgressPhoto({ takenAt: taken, label: photoLabel.trim() || undefined, imageDataUrl: photoDataUrl });
                 setPhotoDataUrl(null);
               }}
             >
               Spara foto
             </button>
           </div>
-
-          <div className="mt-4">
-            <div className="text-sm font-semibold text-zinc-900">Senaste foton</div>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {state.progressPhotos.length ? (
-                [...state.progressPhotos]
+          {state.progressPhotos.length > 0 && (
+            <div className="mt-4">
+              <div className="text-sm font-semibold text-zinc-900">Senaste foton</div>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {[...state.progressPhotos]
                   .sort((a, b) => new Date(b.takenAt).getTime() - new Date(a.takenAt).getTime())
                   .slice(0, 6)
                   .map((p) => (
-                    <div key={p.id} className="relative">
-                      <img
-                        src={p.imageDataUrl}
-                        alt={p.label ?? "progressfoto"}
-                        className="h-20 w-full rounded-2xl object-cover ring-1 ring-black/5"
-                      />
-                    </div>
-                  ))
-              ) : (
-                <div className="col-span-3 text-sm text-zinc-600">
-                  Inga foton än.
-                </div>
-              )}
+                    <img key={p.id} src={p.imageDataUrl} alt={p.label ?? "progressfoto"}
+                      className="h-20 w-full rounded-2xl object-cover ring-1 ring-black/5" />
+                  ))}
+              </div>
             </div>
-          </div>
+          )}
+        </Card>
+
+        {/* ── Export ── */}
+        <Card className="p-4">
+          <div className="text-sm font-semibold text-zinc-900">Export</div>
+          <div className="mt-2 text-sm text-zinc-600">Ladda ner din data som CSV eller PDF.</div>
+          <Link
+            href="/export"
+            className="vikttappBtn vikttappBtnPrimary mt-3 inline-flex w-full items-center justify-center px-4 py-3 text-sm font-semibold text-white"
+          >
+            Öppna export
+          </Link>
         </Card>
       </div>
-
-      <Card className="p-4 mt-3">
-        <div className="text-sm font-semibold text-zinc-900">Status</div>
-        <div className="mt-2 text-sm text-zinc-600">
-          Den här versionen kör en lokal demo (localStorage) för att visa UI/UX och beräkningar.
-          När vi kopplar in Directus byter vi datalager utan att ändra skärmarna.
-        </div>
-      </Card>
-
-      <Card className="p-4 mt-3">
-        <div className="text-sm font-semibold text-zinc-900">Export</div>
-        <div className="mt-2 text-sm text-zinc-600">
-          Ladda ner din data som CSV eller PDF.
-        </div>
-        <Link
-          href="/export"
-          className="vikttappBtn vikttappBtnPrimary mt-3 inline-flex w-full items-center justify-center px-4 py-3 text-sm font-semibold text-white"
-        >
-          Öppna export
-        </Link>
-      </Card>
     </div>
   );
 }
-
