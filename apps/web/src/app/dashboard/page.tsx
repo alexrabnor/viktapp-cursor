@@ -129,10 +129,10 @@ export default function DashboardPage() {
   const [openLogInjection, setOpenLogInjection] = useState(false);
 
   // Add weight form state
-  const [weightInput, setWeightInput] = useState<number>(currentWeightKg ? Math.round(currentWeightKg * 10) / 10 : 75);
+  const [weightInput, setWeightInput] = useState<string>("");
 
   // Injection form state
-  const [doseInput, setDoseInput] = useState<number>(state.settings.doseAmountMg);
+  const [doseInput, setDoseInput] = useState<string>("");
   const [nausea, setNausea] = useState<0 | 1 | 2 | 3 | undefined>(undefined);
   const [fatigue, setFatigue] = useState<0 | 1 | 2 | 3 | undefined>(undefined);
   const [appetite, setAppetite] = useState<0 | 1 | 2 | 3 | undefined>(undefined);
@@ -290,14 +290,20 @@ export default function DashboardPage() {
         <button
           type="button"
           className="vikttappBtn vikttappBtnPrimary flex flex-1 items-center justify-center px-4 py-3 text-sm font-semibold"
-          onClick={() => setOpenAddWeight(true)}
+          onClick={() => {
+            setWeightInput("");
+            setOpenAddWeight(true);
+          }}
         >
           Lägg till vikt
         </button>
         <button
           type="button"
           className="vikttappBtn vikttappBtnSoft flex flex-1 items-center justify-center px-4 py-3 text-sm font-semibold"
-          onClick={() => setOpenLogInjection(true)}
+          onClick={() => {
+            setDoseInput(state.settings.doseAmountMg ? String(state.settings.doseAmountMg) : "");
+            setOpenLogInjection(true);
+          }}
         >
           Logga injektion
         </button>
@@ -312,9 +318,10 @@ export default function DashboardPage() {
           className="space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
-            const w = Number(weightInput);
+            const w = parseFloat(weightInput.replace(",", "."));
             if (!Number.isFinite(w) || w <= 0) return;
             addWeight(w, new Date(), "manuell");
+            setWeightInput("");
             setOpenAddWeight(false);
           }}
         >
@@ -322,10 +329,12 @@ export default function DashboardPage() {
             <span className="text-sm font-medium text-zinc-700">Vikt (kg)</span>
             <input
               className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
-              type="number"
-              step="0.1"
+              type="text"
+              inputMode="decimal"
+              placeholder={currentWeightKg ? `Senast: ${Math.round(currentWeightKg * 10) / 10} kg` : "t.ex. 75.0"}
               value={weightInput}
-              onChange={(e) => setWeightInput(Number(e.target.value))}
+              onChange={(e) => setWeightInput(e.target.value)}
+              autoFocus
             />
           </label>
 
@@ -347,7 +356,7 @@ export default function DashboardPage() {
           className="space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
-            const dose = Number(doseInput);
+            const dose = parseFloat(doseInput.replace(",", "."));
             if (!Number.isFinite(dose) || dose <= 0) return;
             logInjection({
               doseAmountMg: dose,
@@ -358,6 +367,7 @@ export default function DashboardPage() {
               doseUnit: "mg",
               notes: undefined,
             });
+            setDoseInput("");
             setOpenLogInjection(false);
           }}
         >
@@ -365,10 +375,12 @@ export default function DashboardPage() {
             <span className="text-sm font-medium text-zinc-700">Dos (mg)</span>
             <input
               className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
-              type="number"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
+              placeholder={state.settings.doseAmountMg ? String(state.settings.doseAmountMg) : "1.0"}
               value={doseInput}
-              onChange={(e) => setDoseInput(Number(e.target.value))}
+              onChange={(e) => setDoseInput(e.target.value)}
+              autoFocus
             />
           </label>
 

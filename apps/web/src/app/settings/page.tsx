@@ -35,12 +35,12 @@ export default function SettingsPage() {
     addProgressPhoto,
   } = useAppData();
 
-  const [heightCm, setHeightCm] = useState(state.settings.heightCm);
-  const [goalWeightKg, setGoalWeightKg] = useState(state.settings.goalWeightKg);
-  const [injectionIntervalDays, setInjectionIntervalDays] = useState(
+  const [heightCm, setHeightCm] = useState<string | number>(state.settings.heightCm);
+  const [goalWeightKg, setGoalWeightKg] = useState<string | number>(state.settings.goalWeightKg);
+  const [injectionIntervalDays, setInjectionIntervalDays] = useState<string | number>(
     state.settings.injectionIntervalDays,
   );
-  const [doseAmountMg, setDoseAmountMg] = useState(state.settings.doseAmountMg);
+  const [doseAmountMg, setDoseAmountMg] = useState<string | number>(state.settings.doseAmountMg);
 
   // Synka formulär när Directus-data laddats
   useEffect(() => {
@@ -110,19 +110,19 @@ export default function SettingsPage() {
             <Field label="Längd" hint="cm">
               <input
                 className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
-                type="number"
-                step="1"
+                type="text"
+                inputMode="numeric"
                 value={heightCm}
-                onChange={(e) => setHeightCm(Number(e.target.value))}
+                onChange={(e) => setHeightCm(e.target.value)}
               />
             </Field>
             <Field label="Målvikt" hint="kg">
               <input
                 className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
-                type="number"
-                step="0.1"
+                type="text"
+                inputMode="decimal"
                 value={goalWeightKg}
-                onChange={(e) => setGoalWeightKg(Number(e.target.value))}
+                onChange={(e) => setGoalWeightKg(e.target.value)}
               />
             </Field>
           </div>
@@ -130,9 +130,11 @@ export default function SettingsPage() {
             type="button"
             className="vikttappBtn vikttappBtnPrimary mt-4 w-full px-4 py-3 text-sm font-semibold text-white"
             onClick={() => {
-              if (!Number.isFinite(heightCm) || heightCm <= 0) return;
-              if (!Number.isFinite(goalWeightKg) || goalWeightKg <= 0) return;
-              updateSettings({ heightCm, goalWeightKg });
+              const h = parseFloat(String(heightCm).replace(",", "."));
+              const g = parseFloat(String(goalWeightKg).replace(",", "."));
+              if (!Number.isFinite(h) || h <= 0) return;
+              if (!Number.isFinite(g) || g <= 0) return;
+              updateSettings({ heightCm: h, goalWeightKg: g });
             }}
           >
             Spara
@@ -146,19 +148,19 @@ export default function SettingsPage() {
             <Field label="Intervall" hint="dagar">
               <input
                 className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
-                type="number"
-                step="1"
+                type="text"
+                inputMode="numeric"
                 value={injectionIntervalDays}
-                onChange={(e) => setInjectionIntervalDays(Number(e.target.value))}
+                onChange={(e) => setInjectionIntervalDays(e.target.value)}
               />
             </Field>
             <Field label="Dos" hint="mg">
               <input
                 className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/20"
-                type="number"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
                 value={doseAmountMg}
-                onChange={(e) => setDoseAmountMg(Number(e.target.value))}
+                onChange={(e) => setDoseAmountMg(e.target.value)}
               />
             </Field>
           </div>
@@ -166,9 +168,11 @@ export default function SettingsPage() {
             type="button"
             className="vikttappBtn vikttappBtnPrimary mt-4 w-full px-4 py-3 text-sm font-semibold text-white"
             onClick={() => {
-              if (!Number.isFinite(injectionIntervalDays) || injectionIntervalDays <= 0) return;
-              if (!Number.isFinite(doseAmountMg) || doseAmountMg <= 0) return;
-              updateSettings({ injectionIntervalDays, doseAmountMg });
+              const interval = parseInt(String(injectionIntervalDays), 10);
+              const dose = parseFloat(String(doseAmountMg).replace(",", "."));
+              if (!Number.isFinite(interval) || interval <= 0) return;
+              if (!Number.isFinite(dose) || dose <= 0) return;
+              updateSettings({ injectionIntervalDays: interval, doseAmountMg: dose });
             }}
           >
             Spara injektionsinställningar
